@@ -483,16 +483,18 @@ function formatDate(iso) {
 }
 
 // ── Mock data (replace with real API calls) ───────────────────────────────────
-const MOCK_FILES = [
-  { fileKey: "1", fileName: "Q1 Report.pdf", fileSize: 2400000, folder: "root", uploadedAt: "2026-05-10T09:00:00Z", status: "ready" },
-  { fileKey: "2", fileName: "Hero Image.png", fileSize: 840000, folder: "root", uploadedAt: "2026-05-12T11:30:00Z", status: "ready" },
-  { fileKey: "3", fileName: "Budget 2026.xlsx", fileSize: 156000, folder: "root", uploadedAt: "2026-05-14T14:00:00Z", status: "ready" },
-  { fileKey: "4", fileName: "Product Demo.mp4", fileSize: 48000000, folder: "root", uploadedAt: "2026-05-15T08:45:00Z", status: "ready" },
-  { fileKey: "5", fileName: "Meeting Notes.docx", fileSize: 32000, folder: "root", uploadedAt: "2026-05-16T16:20:00Z", status: "ready" },
-  { fileKey: "6", fileName: "Logo Final.png", fileSize: 124000, folder: "root", uploadedAt: "2026-05-17T10:00:00Z", status: "ready" },
-  { fileKey: "7", fileName: "Source Code.zip", fileSize: 8200000, folder: "root", uploadedAt: "2026-05-17T12:00:00Z", status: "ready" },
-  { fileKey: "8", fileName: "Podcast Ep3.mp3", fileSize: 22000000, folder: "root", uploadedAt: "2026-05-17T13:00:00Z", status: "ready" },
-];
+async function loadFiles() {
+  try {
+    // Replace mock data with real API call
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/files`, {
+      headers: { Authorization: `Bearer ${yourCognitoToken}` }
+    });
+    const data = await res.json();
+    setFiles(data);
+  } catch (err) {
+    console.error('Could not load files', err);
+  }
+}
 
 // ── AI Insight Generator (simulated — wire to your Claude API) ────────────────
 function generateInsight(file) {
