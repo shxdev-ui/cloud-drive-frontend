@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import LandingPage from "./LandingPage";
 import PricingPage from "./PricingPage";
-import { signOut } from 'aws-amplify/auth';
 import AuthPage from "./AuthPage";
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import FilioApp from "./FilioApp";
