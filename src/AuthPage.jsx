@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  signIn,
+  signUp,
+  confirmSignUp,
+  fetchAuthSession
+} from 'aws-amplify/auth';
 
 const css = `
 .ap * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -137,21 +143,56 @@ export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
   const [success, setSuccess] = useState("");
 
   const handleSubmit = async () => {
-    setError(""); setSuccess("");
-    if (!email || !password) { setError("Please fill in all fields."); return; }
-    if (tab === "signup" && !name) { setError("Please enter your name."); return; }
-    if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
+  try {
     setLoading(true);
-    // Simulate API call — replace with real Cognito call
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    if (tab === "signup") {
-      setSuccess("Account created! Check your email to verify.");
-      setTimeout(() => { setTab("login"); setSuccess(""); }, 2000);
+    setError('');
+    setSuccess('');
+
+    if (tab === 'signup') {
+      await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            name
+          }
+        }
+      });
+
+      setNeedsConfirmation(true);
+      setSuccess('Account created. Enter the verification code from your email.');
     } else {
-      onLogin({ email, name: email.split("@")[0] });
+      await signIn({
+        username: email,
+        password
+      });
+
+      const session = await fetchAuthSession();
+      const token = session.tokens.idToken.toString();
+
+      // Create user record in DynamoDB
+      await axios.post(
+        `${API}/auth/register`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      onLogin({
+        email,
+        name
+      });
     }
-  };
+  } catch (err) {
+    setError(err.message || 'Authentication failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import LandingPage from "./LandingPage";
 import PricingPage from "./PricingPage";
+import { signOut } from 'aws-amplify/auth';
 import AuthPage from "./AuthPage";
+import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import FilioApp from "./FilioApp";
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // This is the main router for Filio.
@@ -41,11 +44,17 @@ export default function App() {
     setPage("app");
   };
 
-  const handleSignout = () => {
-    setUser(null);
-    localStorage.removeItem("filio-user");
-    setPage("landing");
-  };
+  const handleSignout = async () => {
+  try {
+    await signOut();
+  } catch (error) {
+    console.error('Sign out failed:', error);
+  }
+
+  setUser(null);
+  localStorage.removeItem('filio-user');
+  setPage('landing');
+};
 
   const handleSelectPlan = (plan) => {
     // Free plan → go straight to auth
