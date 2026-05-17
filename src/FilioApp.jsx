@@ -510,7 +510,7 @@ function generateInsight(file) {
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
-export default function FilioApp() {
+export default function FilioApp({ user, onSignout }) {
   const [theme, setTheme] = useState("light");
   const [view, setView] = useState("grid");
   const [files, setFiles] = useState(MOCK_FILES);
@@ -616,7 +616,9 @@ export default function FilioApp() {
               <div className="avatar">SH</div>
               <span className="user-name">Sheetanshu</span>
             </div>
-            <button className="signout-btn">Sign out</button>
+            <button className="signout-btn" onClick={onSignout}>
+  Sign Out
+</button>
           </div>
         </nav>
 
