@@ -109,7 +109,6 @@ import axios from "axios";
   };
 
   // ... keep the rest of your JSX exactly as it is ...
-}
 
 const css = `
 .ap * { box-sizing: border-box; margin: 0; padding: 0; }
