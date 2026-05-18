@@ -6,8 +6,6 @@ import {
   fetchAuthSession
 } from "aws-amplify/auth";
 import axios from "axios";
-
-export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
   const [tab, setTab] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
