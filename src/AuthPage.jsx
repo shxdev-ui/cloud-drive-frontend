@@ -4,7 +4,114 @@ import {
   signUp,
   confirmSignUp,
   fetchAuthSession
-} from 'aws-amplify/auth';
+} from "aws-amplify/auth";
+import axios from "axios";
+
+export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
+  const [tab, setTab] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Email verification state
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [confirmationCode, setConfirmationCode] = useState("");
+
+  // Backend API URL
+  const API = import.meta.env.VITE_API_URL;
+
+  // Sign In / Sign Up
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      // SIGN UP FLOW
+      if (tab === "signup") {
+        await signUp({
+          username: email,
+          password,
+          options: {
+            userAttributes: {
+              email,
+              name,
+            },
+          },
+        });
+
+        setNeedsConfirmation(true);
+        setSuccess(
+          "Account created successfully. Please check your email and enter the verification code."
+        );
+        return;
+      }
+
+      // SIGN IN FLOW
+      await signIn({
+        username: email,
+        password,
+      });
+
+      // Get Cognito token
+      const session = await fetchAuthSession();
+      const token = session.tokens.idToken.toString();
+
+      // Create user in DynamoDB (safe to call repeatedly)
+      await axios.post(
+        `${API}/auth/register`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Notify App.jsx that login succeeded
+      onLogin({
+        email,
+        name: name || email.split("@")[0],
+      });
+    } catch (err) {
+      console.error("Authentication error:", err);
+      setError(err.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify email code after signup
+  const handleConfirmSignup = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      await confirmSignUp({
+        username: email,
+        confirmationCode,
+      });
+
+      setNeedsConfirmation(false);
+      setTab("login");
+
+      setSuccess(
+        "Email verified successfully. You can now sign in with your account."
+      );
+    } catch (err) {
+      console.error("Confirmation error:", err);
+      setError(err.message || "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ... keep the rest of your JSX exactly as it is ...
+}
 
 const css = `
 .ap * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -273,10 +380,31 @@ export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
               <input className="ap-input" type="password" placeholder="Min. 8 characters" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSubmit()} />
             </div>
-
-            <button className="ap-btn" onClick={handleSubmit} disabled={loading}>
-              {loading ? "Please wait…" : tab === "login" ? "Sign in →" : "Create my account →"}
-            </button>
+{needsConfirmation && (
+  <div className="ap-field">
+    <label className="ap-label">Verification Code</label>
+    <input
+      className="ap-input"
+      type="text"
+      placeholder="Enter code from your email"
+      value={confirmationCode}
+      onChange={(e) => setConfirmationCode(e.target.value)}
+    />
+  </div>
+)}
+           <button
+  className="ap-btn"
+  onClick={needsConfirmation ? handleConfirmSignup : handleSubmit}
+  disabled={loading}
+>
+  {loading
+    ? "Please wait…"
+    : needsConfirmation
+    ? "Verify Email →"
+    : tab === "login"
+    ? "Sign in →"
+    : "Create my account →"}
+</button>
 
             <div className="ap-divider">or continue with</div>
             <button className="ap-social-btn">
