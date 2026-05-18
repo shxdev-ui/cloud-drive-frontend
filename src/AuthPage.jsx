@@ -217,13 +217,13 @@ export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
       // ── Real Cognito login ──
       // Uncomment this block when Amplify is configured:
       //
-      // const { signIn } = await import("aws-amplify/auth");
-      // const result = await signIn({ username: email, password });
-      // if (result.isSignedIn) {
-      //   onLogin({ email, name: email.split("@")[0] });
-      // } else {
-      //   setError("Login incomplete. Please try again.");
-      // }
+      const { signIn } = await import("aws-amplify/auth");
+      const result = await signIn({ username: email, password });
+      if (result.isSignedIn) {
+        onLogin({ email, name: email.split("@")[0] });
+      } else {
+        setError("Login incomplete. Please try again.");
+      }
 
       // ── Simulated login (remove when real Cognito is connected) ──
       await new Promise(r => setTimeout(r, 1000));
@@ -264,14 +264,14 @@ export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
       // ── Real Cognito signup ──
       // Uncomment this block when Amplify is configured:
       //
-      // const { signUp } = await import("aws-amplify/auth");
-      // await signUp({
-      //   username: email,
-      //   password,
-      //   options: { userAttributes: { email, name } }
-      // });
-      // setStep("verify");
-      // setSuccess("Account created! Check your email for a 6-digit verification code.");
+      const { signUp } = await import("aws-amplify/auth");
+      await signUp({
+        username: email,
+        password,
+        options: { userAttributes: { email, name } }
+      });
+      setStep("verify");
+      setSuccess("Account created! Check your email for a 6-digit verification code.");
 
       // ── Simulated signup (remove when real Cognito is connected) ──
       await new Promise(r => setTimeout(r, 1200));
@@ -301,11 +301,11 @@ export default function AuthPage({ onLogin, onBack, theme, onToggleTheme }) {
       // ── Real Cognito confirmation ──
       // Uncomment this block when Amplify is configured:
       //
-      // const { confirmSignUp, signIn } = await import("aws-amplify/auth");
-      // await confirmSignUp({ username: email, confirmationCode: code });
-      // // Auto-login after verification
-      // await signIn({ username: email, password });
-      // onLogin({ email, name: email.split("@")[0] });
+      const { confirmSignUp, signIn } = await import("aws-amplify/auth");
+      await confirmSignUp({ username: email, confirmationCode: code });
+      // Auto-login after verification
+      await signIn({ username: email, password });
+      onLogin({ email, name: email.split("@")[0] });
 
       // ── Simulated verify (remove when real Cognito is connected) ──
       await new Promise(r => setTimeout(r, 1000));
